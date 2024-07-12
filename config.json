@@ -1,0 +1,22 @@
+{
+    "TELEGRAM_CHAT_ID": "-1001267327365",
+    "MG_DOMAIN": "mailgun.digitalsymphony.it",
+    "SENTINO_ENDPOINT": "https://www.sentinocrm.com/service2/register?ws=1",
+    "MG_SENDER_EMAIL": "noreply@gamudacove.com.my",
+    "dev": {
+        "DDBTABLE_PRODUCTS": "dev-gc-products-ver2",
+        "PITR_ACTIVE": false,
+        "MG_ADMIN_EMAIL": "dsadmin@maildrop.cc",
+        "SENTINO_PROJECT_ID": "Jtd9tL1820180423115313",
+        "SENTINO_SOURCE_ID": "14",
+        "TEST": true
+    },
+    "prod": {
+        "DDBTABLE_PRODUCTS": "gc-products-ver2",
+        "PITR_ACTIVE": true,
+        "MG_ADMIN_EMAIL": "pm@digitalsymphony.it",
+        "SENTINO_PROJECT_ID": "gmMDCgq120211228120459",
+        "SENTINO_SOURCE_ID": "6488AW6dtes20220317161025",
+        "TEST": false
+    }
+}

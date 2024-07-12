@@ -1,0 +1,635 @@
+{
+  "service": {
+    "service": "gamudacove-microsites-lambda",
+    "serviceObject": {
+      "name": "gamudacove-microsites-lambda"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "provided.al2",
+      "architecture": "arm64",
+      "stage": "dev",
+      "timeout": 15,
+      "region": "ap-southeast-1",
+      "versionFunctions": false,
+      "endpointType": "regional",
+      "deploymentBucket": "serverless-deploys-ds",
+      "environment": {
+        "MG_DOMAIN": "mailgun.digitalsymphony.it",
+        "TELEGRAM_CHAT_ID": "-1001267327365",
+        "SENTINO_ENDPOINT": "https://www.sentinocrm.com/service2/register?ws=1",
+        "MG_SENDER_EMAIL": "noreply@gamudacove.com.my",
+        "MG_ADMIN_EMAIL": "dsadmin@maildrop.cc",
+        "DDBTABLE_PRODUCTS": "dev-gc-products-ver2",
+        "SENTINO_PROJECT_ID": "Jtd9tL1820180423115313",
+        "SENTINO_SOURCE_ID": "14",
+        "TEST": "true",
+        "FUNCTION_NAME": "gamudacove"
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Resource": "*",
+              "Action": [
+                "dynamodb:Scan",
+                "dynamodb:PutItem",
+                "ssm:GetParameters"
+              ]
+            }
+          ]
+        }
+      },
+      "deploymentBucketObject": {
+        "name": "serverless-deploys-ds"
+      },
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ProductsLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/dev-products"
+            }
+          },
+          "AuthorizerLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/gamudacove-microsites-lambda-dev-authorizer"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "gamudacove-microsites-lambda",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dev-products:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/gamudacove-microsites-lambda-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/dev-products:*:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/gamudacove-microsites-lambda-dev*:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][0]"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "gamudacove-microsites-lambda",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "ProductsLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-deploys-ds",
+                "S3Key": "serverless/gamudacove-microsites-lambda/dev/1720759889095-2024-07-12T04:51:29.095Z/products.zip"
+              },
+              "Handler": "bootstrap",
+              "Runtime": "provided.al2",
+              "FunctionName": "dev-products",
+              "MemorySize": 1024,
+              "Timeout": 15,
+              "Architectures": [
+                "arm64"
+              ],
+              "Environment": {
+                "Variables": {
+                  "MG_DOMAIN": "mailgun.digitalsymphony.it",
+                  "TELEGRAM_CHAT_ID": "-1001267327365",
+                  "SENTINO_ENDPOINT": "https://www.sentinocrm.com/service2/register?ws=1",
+                  "MG_SENDER_EMAIL": "noreply@gamudacove.com.my",
+                  "MG_ADMIN_EMAIL": "dsadmin@maildrop.cc",
+                  "DDBTABLE_PRODUCTS": "dev-gc-products-ver2",
+                  "SENTINO_PROJECT_ID": "Jtd9tL1820180423115313",
+                  "SENTINO_SOURCE_ID": "14",
+                  "TEST": "true",
+                  "FUNCTION_NAME": "gamudacove"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "ProductsLogGroup"
+            ]
+          },
+          "AuthorizerLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-deploys-ds",
+                "S3Key": "serverless/gamudacove-microsites-lambda/dev/1720759889095-2024-07-12T04:51:29.095Z/authorizer.zip"
+              },
+              "Handler": "bootstrap",
+              "Runtime": "provided.al2",
+              "FunctionName": "gamudacove-microsites-lambda-dev-authorizer",
+              "MemorySize": 1024,
+              "Timeout": 15,
+              "Architectures": [
+                "arm64"
+              ],
+              "Environment": {
+                "Variables": {
+                  "MG_DOMAIN": "mailgun.digitalsymphony.it",
+                  "TELEGRAM_CHAT_ID": "-1001267327365",
+                  "SENTINO_ENDPOINT": "https://www.sentinocrm.com/service2/register?ws=1",
+                  "MG_SENDER_EMAIL": "noreply@gamudacove.com.my",
+                  "MG_ADMIN_EMAIL": "dsadmin@maildrop.cc",
+                  "DDBTABLE_PRODUCTS": "dev-gc-products-ver2",
+                  "SENTINO_PROJECT_ID": "Jtd9tL1820180423115313",
+                  "SENTINO_SOURCE_ID": "14",
+                  "TEST": "true",
+                  "FUNCTION_NAME": "gamudacove"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "AuthorizerLogGroup"
+            ]
+          },
+          "ApiGatewayRestApi": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+              "Name": "dev-gamudacove-microsites-lambda",
+              "EndpointConfiguration": {
+                "Types": [
+                  "REGIONAL"
+                ]
+              },
+              "Policy": ""
+            }
+          },
+          "ApiGatewayResourceProducts": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "products",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayResourceProductsContacts": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Ref": "ApiGatewayResourceProducts"
+              },
+              "PathPart": "contacts",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodProductsContactsOptions": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "AuthorizationType": "NONE",
+              "HttpMethod": "OPTIONS",
+              "MethodResponses": [
+                {
+                  "StatusCode": "200",
+                  "ResponseParameters": {
+                    "method.response.header.Access-Control-Allow-Origin": true,
+                    "method.response.header.Access-Control-Allow-Headers": true,
+                    "method.response.header.Access-Control-Allow-Methods": true
+                  },
+                  "ResponseModels": {}
+                }
+              ],
+              "RequestParameters": {},
+              "Integration": {
+                "Type": "MOCK",
+                "RequestTemplates": {
+                  "application/json": "{statusCode:200}"
+                },
+                "ContentHandling": "CONVERT_TO_TEXT",
+                "IntegrationResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": "'*'",
+                      "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                      "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    },
+                    "ResponseTemplates": {
+                      "application/json": ""
+                    }
+                  }
+                ]
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceProductsContacts"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodProductsContactsPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceProductsContacts"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ProductsLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "ProductsLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayDeployment1720759887710": {
+            "Type": "AWS::ApiGateway::Deployment",
+            "Properties": {
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "StageName": "dev"
+            },
+            "DependsOn": [
+              "ApiGatewayMethodProductsContactsOptions",
+              "ApiGatewayMethodProductsContactsPost"
+            ]
+          },
+          "ProductsLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ProductsLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "ProductsResource": {
+            "DeletionPolicy": "Retain",
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "dev-gc-products-ver2",
+              "DeletionProtectionEnabled": true,
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "uuid",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "uuid",
+                  "KeyType": "HASH"
+                }
+              ],
+              "BillingMode": "PAY_PER_REQUEST",
+              "PointInTimeRecoverySpecification": {
+                "PointInTimeRecoveryEnabled": false
+              }
+            }
+          },
+          "GatewayResponse": {
+            "Type": "AWS::ApiGateway::GatewayResponse",
+            "Properties": {
+              "ResponseParameters": {
+                "gatewayresponse.header.WWW-Authenticate": "'Basic'"
+              },
+              "ResponseType": "UNAUTHORIZED",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "StatusCode": "401"
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-deploys-ds",
+            "Export": {
+              "Name": "sls-gamudacove-microsites-lambda-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "ServiceEndpoint": {
+            "Description": "URL of the service endpoint",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "ApiGatewayRestApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  },
+                  "/dev"
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-gamudacove-microsites-lambda-dev-ServiceEndpoint"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "custom": {
+      "configs": {
+        "TELEGRAM_CHAT_ID": "-1001267327365",
+        "MG_DOMAIN": "mailgun.digitalsymphony.it",
+        "SENTINO_ENDPOINT": "https://www.sentinocrm.com/service2/register?ws=1",
+        "MG_SENDER_EMAIL": "noreply@gamudacove.com.my",
+        "dev": {
+          "DDBTABLE_PRODUCTS": "dev-gc-products-ver2",
+          "PITR_ACTIVE": false,
+          "MG_ADMIN_EMAIL": "dsadmin@maildrop.cc",
+          "SENTINO_PROJECT_ID": "Jtd9tL1820180423115313",
+          "SENTINO_SOURCE_ID": "14",
+          "TEST": true
+        },
+        "prod": {
+          "DDBTABLE_PRODUCTS": "gc-products-ver2",
+          "PITR_ACTIVE": true,
+          "MG_ADMIN_EMAIL": "pm@digitalsymphony.it",
+          "SENTINO_PROJECT_ID": "gmMDCgq120211228120459",
+          "SENTINO_SOURCE_ID": "6488AW6dtes20220317161025",
+          "TEST": false
+        }
+      }
+    },
+    "pluginsData": {},
+    "functions": {
+      "Products": {
+        "name": "dev-products",
+        "handler": "bootstrap",
+        "package": {
+          "artifact": "build/lambda/products.zip"
+        },
+        "events": [
+          {
+            "http": {
+              "path": "products/contacts",
+              "cors": {
+                "origin": "*",
+                "methods": [
+                  "OPTIONS",
+                  "POST"
+                ],
+                "headers": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "allowCredentials": false
+              },
+              "method": "post",
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "memory": 1024,
+        "timeout": 15,
+        "runtime": "provided.al2",
+        "vpc": {}
+      },
+      "authorizer": {
+        "handler": "bootstrap",
+        "package": {
+          "artifact": "build/lambda/authorizer.zip"
+        },
+        "events": [],
+        "name": "gamudacove-microsites-lambda-dev-authorizer",
+        "memory": 1024,
+        "timeout": 15,
+        "runtime": "provided.al2",
+        "vpc": {}
+      }
+    },
+    "resources": {
+      "Resources": {
+        "ProductsResource": {
+          "DeletionPolicy": "Retain",
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "dev-gc-products-ver2",
+            "DeletionProtectionEnabled": true,
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "uuid",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "uuid",
+                "KeyType": "HASH"
+              }
+            ],
+            "BillingMode": "PAY_PER_REQUEST",
+            "PointInTimeRecoverySpecification": {
+              "PointInTimeRecoveryEnabled": false
+            }
+          }
+        },
+        "GatewayResponse": {
+          "Type": "AWS::ApiGateway::GatewayResponse",
+          "Properties": {
+            "ResponseParameters": {
+              "gatewayresponse.header.WWW-Authenticate": "'Basic'"
+            },
+            "ResponseType": "UNAUTHORIZED",
+            "RestApiId": {
+              "Ref": "ApiGatewayRestApi"
+            },
+            "StatusCode": "401"
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless.yml",
+    "initialServerlessConfig": {
+      "service": "gamudacove-microsites-lambda",
+      "frameworkVersion": "3",
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "package": {
+        "individually": true,
+        "artifactsS3KeyDirname": "serverless/gamudacove-microsites-lambda/dev/code-artifacts",
+        "deploymentBucket": "serverless-deploys-ds",
+        "artifactDirectoryName": "serverless/gamudacove-microsites-lambda/dev/1720759889095-2024-07-12T04:51:29.095Z"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "layers": {},
+    "isDashboardMonitoringPreconfigured": false
+  },
+  "package": {
+    "individually": true,
+    "artifactDirectoryName": "serverless/gamudacove-microsites-lambda/dev/1720759889095-2024-07-12T04:51:29.095Z",
+    "artifact": ""
+  }
+}
